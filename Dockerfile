@@ -1,8 +1,11 @@
-FROM golang:1.8-alpine
-ADD . /go/src/hello-app
-RUN go install hello-app
+FROM golang:1.14
 
-FROM alpine:latest
-COPY --from=0 /go/bin/hello-app .
-ENV PORT 8080
-CMD ["./hello-app"]
+RUN go get -u -v github.com/go-delve/delve/cmd/dlv
+
+WORKDIR /src/hello-world
+
+COPY . ./
+
+RUN go build -o /app -v ./
+
+ENTRYPOINT ["dlv", "exec", "/app", "--continue", "--accept-multiclient", "--api-version=2", "--headless", "--listen=:3000", "--log"]
